@@ -1,0 +1,19 @@
+library(tidyverse)
+library(rvest)
+library(janitor)
+
+link <- "https://www.numbeo.com/cost-of-living/compare_cities.jsp?country1=France&city1=Paris&country2=France&city2=Lyon"
+
+page <- read_html(link)
+
+page %>% 
+  html_nodes("table") %>% 
+  .[[3]] %>% 
+  html_table() %>% 
+  clean_names() %>% 
+  select(c("restaurants","lyon_edit")) %>% 
+  mutate(lyon = as.numeric(sub("[^0-9.]+", "",lyon_edit))) %>%
+  mutate(lyon = lyon %>% is.na %>% ifelse(restaurants,lyon)) %>% 
+  select(-lyon_edit)-> table1
+
+write.csv(table1,"chi tieu du tinh.csv")
